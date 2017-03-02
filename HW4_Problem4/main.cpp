@@ -22,12 +22,12 @@ int get_line_breaks(vector<int>& Prev, int wordIndex, vector< vector<int> >& pre
 
 	prettyLineIndices[k][0] = i;
 	prettyLineIndices[k][1] = wordIndex;
-	cout << "k: " << k << "i: " << i << "wordIndex: " << wordIndex << endl;
+	//cout << "k: " << k << "i: " << i << "wordIndex: " << wordIndex << endl;
 	return k;
 }
 
 int main(int argc, char** argv) {
-	if (argc != 2) {
+	if (argc != 3) {
 		cout << "Incorrect input args list" << endl;
 	}
 
@@ -43,6 +43,7 @@ int main(int argc, char** argv) {
 		wordLengths.push_back(word.length());
 	}
 
+	file.close();
 	size_t numWords = wordLengths.size() - 1;
 	istringstream maxLineLen(argv[2]);
 	int maxLineLength;
@@ -87,12 +88,29 @@ int main(int argc, char** argv) {
 		}
 	}
 
-	vector< vector<int> > prettLineIndices(numWords +1, vector<int>(2, 0));
-	int num_pretty_lines = get_line_breaks(Prev, numWords, prettLineIndices);
+	vector< vector<int> > prettyLineIndices(numWords +1, vector<int>(2, 0));
+	int num_pretty_lines = get_line_breaks(Prev, numWords, prettyLineIndices);
 
-	/*while(!num_pretty_lines){
+	file.open(argv[1]);
+	if (!file.is_open()) return -1;
 
-	}*/
-	file.close();
+	int i = 1;
+	while(i <= num_pretty_lines){
+		int startIndex = prettyLineIndices[i][0];
+		int endIndex = prettyLineIndices[i][1];
+		string wordsLine;
+		while (startIndex <= endIndex) {
+			string word;
+			if(file >> word)
+			{
+				wordsLine.append(word);
+				wordsLine.append(" ");
+			}
+			startIndex++;
+		}
+		cout << wordsLine << endl;
+		i++;
+	}
+	
 	return 0;
 }
