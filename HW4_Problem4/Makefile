@@ -3,7 +3,7 @@
 # Please see example of "utils" to see how to add additional file
 # to your project
 
-all: randmst
+all: pretty
 
 # C-compiler settings
 CC = g++ 
@@ -51,15 +51,14 @@ $(DEPSDIR)/stamp $(BUILDSTAMP):
 # dependency on the right side of whichever one requires the file.
 ##
 
-randmst: main.o Graph.o
+pretty: main.o
 	$(CC) $(CFLAGS) $(DEPCFLAGS) -o $@ $^ $(LIBS)
 
 clean:
-	rm -f randmst *.o *~ *.bak core *.core
+	rm -f pretty *.o *~ *.bak core *.core
 	rm -rf .deps
 
 distclean: clean
 	rm -rf $(DEPSDIR)
-	rm -rf *.txt
 
 .PHONY: all clean distclean
