@@ -4,7 +4,6 @@
 #include <limits.h>
 #include <fstream>
 #include <cstdlib>
-//#include <chrono>
 #include <vector>
 #include <cmath>
 #include <algorithm>
@@ -26,15 +25,18 @@ int get_line_breaks(vector<int>& Prev, int wordIndex, vector< vector<int> >& pre
 	return k;
 }
 
+//The program assumes the input args as: name of the text file, maximum line length(M).
 int main(int argc, char** argv) {
 	if (argc != 3) {
 		cout << "Incorrect input args list" << endl;
 	}
 
+	//Open the input text file.
 	ifstream file;
 	file.open(argv[1]);
 	if (!file.is_open()) return -1;
 
+	//Create an array of the lengths of the input words.
 	vector<int> wordLengths;
 	wordLengths.push_back(-1);
 	string word;
@@ -42,32 +44,36 @@ int main(int argc, char** argv) {
 	{
 		wordLengths.push_back(word.length());
 	}
-
 	file.close();
+
+	//Read the input argument of maximum line length
 	size_t numWords = wordLengths.size() - 1;
 	istringstream maxLineLen(argv[2]);
 	int maxLineLength;
 	if (!(maxLineLen >> maxLineLength))
 		cerr << "Invalid number for maxLineLength" << argv[2] << '\n';
 
+	//Computing the extra spaces for all combination of words i and j.
 	vector< vector<int> > extraSpace(numWords+1, vector<int>(numWords + 1, 0));
-	vector< vector<int> > penalty(numWords + 1, vector<int>(numWords + 1, 0));
 	for (size_t i = 1; i <= numWords; i++) {
 		extraSpace[i][i] = maxLineLength - wordLengths[i];
 		for (size_t j = i + 1; j <= numWords; j++) {
-			int a1 = extraSpace[i][j - 1];
-			int a2 = wordLengths[j];
 			extraSpace[i][j] = extraSpace[i][j - 1] - wordLengths[j] - 1;
 		}
 	}
 
+	//Compute the penalty for all combination of words based upon the extra spaces.
+	vector< vector<int> > penalty(numWords + 1, vector<int>(numWords + 1, 0));
 	for (size_t i = 1; i <= numWords; i++) {
 		for (size_t j = i; j <= numWords; j++) {
 			if (extraSpace[i][j] < 0) {
-				penalty[i][j] = INT_MAX;
+				//a large number to singify the minimum of penalty not to 
+				//count the case in which words dont fit in the line.
+				penalty[i][j] = INT_MAX; 
 			}
 			else if (j == numWords && extraSpace[i][j] >= 0) {
-				penalty[i][j] = 0;
+				//Last line penalty is zero
+				penalty[i][j] = 0; 
 			}
 			else {
 				penalty[i][j] = (int)pow(extraSpace[i][j], 3);
@@ -75,6 +81,7 @@ int main(int argc, char** argv) {
 		}
 	}
 
+	//Calculate the minimum cost of the penalty for each word with storing the line breaks in the array Prev.
 	vector<unsigned int> MinCost(numWords + 1);
 	vector<int> Prev(numWords + 1);
 	MinCost[0] = 0;
@@ -91,6 +98,7 @@ int main(int argc, char** argv) {
 	vector< vector<int> > prettyLineIndices(numWords +1, vector<int>(2, 0));
 	int num_pretty_lines = get_line_breaks(Prev, numWords, prettyLineIndices);
 
+	//Read the input file to output the words in console based on the algorithm.
 	file.open(argv[1]);
 	if (!file.is_open()) return -1;
 
@@ -111,6 +119,18 @@ int main(int argc, char** argv) {
 		cout << wordsLine << endl;
 		i++;
 	}
-	
+	file.close();
+
+	i = 1;
+	int finalPenalty = 0;
+	while (i < num_pretty_lines) {
+		int startIndex = prettyLineIndices[i][0];
+		int endIndex = prettyLineIndices[i][1];
+		
+		finalPenalty += penalty[startIndex][endIndex];
+		i++;
+	}
+
+	cout << "penalty: "<< finalPenalty << endl;
 	return 0;
 }
